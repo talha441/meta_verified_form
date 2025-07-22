@@ -1,0 +1,6 @@
+services:
+  - type: web
+    name: meta_verified_form
+    env: python
+    buildCommand: ""
+    startCommand: "python app.py"
